@@ -1,7 +1,7 @@
-let createRandomArray = function(size, max) {
+let createRandomArray = function (size, max) {
     let data = [];
 
-    for( let i = 0; i < size; i++ ){
+    for (let i = 0; i < size; i++) {
         data.push(Math.round(Math.random() * max));
     }
 
@@ -10,11 +10,11 @@ let createRandomArray = function(size, max) {
 
 let sort = function (data) {
     let cost = 0;
-    for (let i = 0; i < data.length-1; i++) {
-        let imax = i; 
-        for(let j = i+1; j < data.length; j++){
+    for (let i = 0; i < data.length - 1; i++) {
+        let imax = i;
+        for (let j = i + 1; j < data.length; j++) {
             cost++
-            if ( data[imax] < data[j]) {
+            if (data[imax] < data[j]) {
                 imax = j;
             }
         }
@@ -30,14 +30,14 @@ let sortBubble = function (data) {
     let proceed = true;
     let cost = 0;
 
-    while(proceed){
+    while (proceed) {
         proceed = false;
-        for(let i = 0; i < data.length-1; i++){
+        for (let i = 0; i < data.length - 1; i++) {
             cost++;
-            if(data[i] > data[i+1]){
-                [data[i], data[i+1]] = [data[i+1], data[i]];
+            if (data[i] > data[i + 1]) {
+                [data[i], data[i + 1]] = [data[i + 1], data[i]];
                 proceed = true;
-            } 
+            }
         }
     }
 
@@ -89,25 +89,72 @@ let sortQuick = function (tab) {
     return cost;
 };
 
+let search = function(nb, tab){
+    let cost = 0;
+    for(let n of tab){
+        cost++;
+        if(n === nb){
+            return { found: true, cost: cost };
+        }
+    }
+    return { found: false, cost: cost };
+}
+
+let binarySearch = function(tab, target) {
+    let left = 0;
+    let right = tab.length - 1;
+    let cost = 0;
+
+    while (left <= right) {
+        cost++;
+        let mid = Math.floor((left + right) / 2);
+
+        if (tab[mid] === target) {
+            return { found: true, cost: cost };
+        } else if (tab[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return { found: false, cost: cost };
+}
+
+// Test de la fonction binarySearch
+let sortedArray = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+console.log(binarySearch(sortedArray, 5)); // Devrait retourner true
+console.log(binarySearch(sortedArray, 11)); // Devrait retourner false
 
 
 let createChart = function () {
     let costsNaive = [];
     let costsBubble = [];
     let costsQuick = [];
+    let costsLinearSearch = [];
+    let costsBinarySearch = [];
     let iLabels = [];
 
-    for(let i = 0; i < 1010; i+=10){
+    for (let i = 0; i < 1010; i += 10) {
         let data = createRandomArray(i, 10);
 
         let costNaive = sort(data);
         costsNaive.push(costNaive);
-            
+
         let costBubble = sortBubble(data)
         costsBubble.push(costBubble);
 
         let costQuick = sortQuick(data);
         costsQuick.push(costQuick);
+
+        // Calculer le coût de la recherche linéaire
+        let resultLinear = search(data[data.length - 1], data);
+        costsLinearSearch.push(resultLinear.cost);
+
+        // Calculer le coût de la recherche binaire
+        let sortedData = [...data].sort((a, b) => a - b);
+        let resultBinary = binarySearch(sortedData, sortedData[sortedData.length - 1]);
+        costsBinarySearch.push(resultBinary.cost);
 
         iLabels.push(i);
     }
@@ -116,30 +163,42 @@ let createChart = function () {
 
     new Chart(ctx, {
         type: 'line',
-        data : {
+        data: {
             labels: iLabels,
             datasets: [
-            {
-                label: 'Naive',
-                data: costsNaive,
-                fill: false,
-                borderColor: 'rgb(255, 0, 0)',
-                tension: 0.1
-            },
-            {
-                label: 'Bubble',
-                data: costsBubble,
-                fill: false,
-                borderColor: 'rgb(0, 255, 0)',
-                tension: 0.1  
-            }, {
-                label: 'Quick Sort',
-                data: costsQuick,
-                fill: false,
-                borderColor: 'rgb(0, 0, 255)',
-                tension: 0.1
-            }
-        ]
+                {
+                    label: 'Naive',
+                    data: costsNaive,
+                    fill: false,
+                    borderColor: 'rgb(255, 0, 0)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Bubble',
+                    data: costsBubble,
+                    fill: false,
+                    borderColor: 'rgb(0, 255, 0)',
+                    tension: 0.1
+                }, {
+                    label: 'Quick Sort',
+                    data: costsQuick,
+                    fill: false,
+                    borderColor: 'rgb(0, 0, 255)',
+                    tension: 0.1
+                }, {
+                    label: 'Linear Search',
+                    data: costsLinearSearch,
+                    fill: false,
+                    borderColor: 'rgb(255, 165, 0)',
+                    tension: 0.1
+                }, {
+                    label: 'Binary Search',
+                    data: costsBinarySearch,
+                    fill: false,
+                    borderColor: 'rgb(75, 0, 130)',
+                    tension: 0.1
+                }
+            ]
         },
         options: {
             scales: {
@@ -152,3 +211,16 @@ let createChart = function () {
 }
 
 createChart();
+
+// Gestionnaire d'événements pour le bouton de recherche
+document.getElementById('searchButton').addEventListener('click', function() {
+    let searchNumber = parseInt(document.getElementById('searchNumber').value);
+    let data = createRandomArray(100, 100); // Générer un tableau aléatoire pour la recherche
+    let sortedData = [...data].sort((a, b) => a - b);
+
+    let resultLinear = search(searchNumber, data);
+    let resultBinary = binarySearch(sortedData, searchNumber);
+
+    console.log(`Recherche linéaire: trouvé = ${resultLinear.found}, coût = ${resultLinear.cost}`);
+    console.log(`Recherche binaire: trouvé = ${resultBinary.found}, coût = ${resultBinary.cost}`);
+});
