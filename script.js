@@ -44,18 +44,57 @@ let sortBubble = function (data) {
     return cost
 }
 
-let partition = function (tab, first, last, pivot) {
-    
-}
+let partition = function (tab, low, high) {
+    let pivot = tab[high];
+    let i = low - 1; // Index du plus grand élément trouvé
 
-let sortQuick = function (data) {
-    let
-}
+    for (let j = low; j < high; j++) {
+        if (tab[j] < pivot) {
+            i++;
+            [tab[i], tab[j]] = [tab[j], tab[i]];
+        }
+    }
+
+    [tab[i + 1], tab[high]] = [tab[high], tab[i + 1]];
+    return i + 1;
+};
+
+let sortQuick = function (tab) {
+    let stack = [];
+    let cost = 0;
+
+    stack.push(0);
+    stack.push(tab.length - 1);
+
+    while (stack.length > 0) {
+        let high = stack.pop();
+        let low = stack.pop();
+
+        let pivotIndex = partition(tab, low, high);
+        cost += high - low;
+
+        // Si des éléments à gauche du pivot
+        if (pivotIndex - 1 > low) {
+            stack.push(low);
+            stack.push(pivotIndex - 1);
+        }
+
+        // Si des éléments à droite du pivot
+        if (pivotIndex + 1 < high) {
+            stack.push(pivotIndex + 1);
+            stack.push(high);
+        }
+    }
+
+    return cost;
+};
+
 
 
 let createChart = function () {
     let costsNaive = [];
     let costsBubble = [];
+    let costsQuick = [];
     let iLabels = [];
 
     for(let i = 0; i < 1010; i+=10){
@@ -66,6 +105,9 @@ let createChart = function () {
             
         let costBubble = sortBubble(data)
         costsBubble.push(costBubble);
+
+        let costQuick = sortQuick(data);
+        costsQuick.push(costQuick);
 
         iLabels.push(i);
     }
@@ -90,8 +132,21 @@ let createChart = function () {
                 fill: false,
                 borderColor: 'rgb(0, 255, 0)',
                 tension: 0.1  
+            }, {
+                label: 'Quick Sort',
+                data: costsQuick,
+                fill: false,
+                borderColor: 'rgb(0, 0, 255)',
+                tension: 0.1
             }
         ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
         }
     });
 }
